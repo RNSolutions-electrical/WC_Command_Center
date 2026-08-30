@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
+<title>Command Center</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0f11;--panel:#111315;--panel2:#15181b;--line:#33383d;--text:#f7f7f5;--muted:#aeb3b8;--orange:#ff6508;--orange2:#c84800;--steel:#70757a;--danger:#ff684f}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#0d0f11;color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0 52%,rgba(255,101,8,.045) 76%,transparent 100%)}
+.shell{max-width:1500px;margin:auto;padding:18px 24px 24px}
+.brandbar{height:58px;border-bottom:1px solid #2c3034;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-weight:950;letter-spacing:.08em;font-size:18px}.brand span{color:var(--orange)}
+.status{font-size:11px;letter-spacing:.14em;font-weight:800;color:var(--muted);text-transform:uppercase}.status b{color:var(--orange)}
+.top{display:grid;grid-template-columns:minmax(300px,.82fr) minmax(480px,1.45fr);gap:18px;align-items:stretch}
+.card{position:relative;background:linear-gradient(135deg,#101214,#151719);border:1px solid #383c40;padding:22px;overflow:hidden}
+.card:after{content:"";position:absolute;width:150px;height:150px;right:-76px;bottom:-76px;border:1px solid rgba(255,101,8,.18);transform:rotate(45deg);pointer-events:none}
+.clock{display:flex;flex-direction:column;justify-content:center;min-height:220px;border-top:3px solid var(--orange)}
+.eyebrow{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.18em;font-weight:900;color:var(--orange);text-transform:uppercase;margin-bottom:18px}.eyebrow:before{content:"";width:38px;height:3px;background:var(--orange)}
+.time{font-size:clamp(58px,8.3vw,118px);font-weight:950;letter-spacing:-.055em;line-height:.82;font-variant-numeric:tabular-nums}
+.date{margin-top:22px;font-size:clamp(16px,1.65vw,22px);color:#e8e8e6;font-weight:700;letter-spacing:.02em}
+.header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:-22px -22px 18px;padding:15px 18px;background:#17191b;border-bottom:1px solid #3a3e42;border-left:4px solid var(--orange)}
+.header h2{font-size:17px;margin:0;text-transform:uppercase;letter-spacing:.11em;font-weight:950}.count{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+form{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:14px}
+input{width:100%;border:1px solid #454a4f;background:#0b0d0f;color:var(--text);border-radius:0;padding:13px 15px;font:inherit;font-size:16px;outline:none}
+input:focus{border-color:var(--orange);box-shadow:inset 3px 0 0 var(--orange)}
+button{border:1px solid var(--orange);border-radius:0;padding:11px 18px;font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:900;cursor:pointer;background:var(--orange);color:#090a0b;min-height:44px}
+.ghost{background:transparent;color:#f3f3f1;border:1px solid #555a5f}.danger{color:var(--danger)}
+#list{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:52vh;overflow:auto}
+.todo{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 12px;background:#151719;border:1px solid #33373b;border-left:3px solid #555b60}
+.todo input{width:19px;height:19px;accent-color:var(--orange)}
+.todo.done{border-left-color:var(--orange2)}.todo.done .label{text-decoration:line-through;color:#74797e}
+.label{font-size:15px}.remove{background:transparent;color:#858b90;border:0;padding:5px 9px;min-height:34px;font-size:18px}
+.empty{color:#777d82;text-align:center;padding:25px 8px;border:1px dashed #3b4044;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;color:#7f858a;font-size:11px;letter-spacing:.04em}
+@media(max-width:720px){.shell{padding:12px}.brandbar{height:48px}.top{grid-template-columns:1fr}.clock{min-height:160px}.card{padding:17px}.header{margin:-17px -17px 16px}}
+@media(orientation:landscape) and (max-height:600px){.shell{padding:8px 14px}.brandbar{height:42px;margin-bottom:9px}.top{grid-template-columns:.82fr 1.5fr;gap:10px}.card{padding:15px}.clock{min-height:calc(100vh - 67px)}.header{margin:-15px -15px 12px;padding:11px 14px}.eyebrow{margin-bottom:12px}.time{font-size:clamp(58px,8vw,104px)}.date{margin-top:16px}#list{max-height:calc(100vh - 170px)}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="brandbar">
+    <div class="brand">WILSON <span>&amp;</span> CREEK</div>
+    <div class="status"><b>●</b> Command Center / Local</div>
+  </header>
+  <div class="top">
+    <section class="card clock" aria-label="Current time and date">
+      <div class="eyebrow">Command Center</div>
+      <div id="time" class="time">--:--</div>
+      <div id="date" class="date">Loading date…</div>
+    </section>
+    <section class="card">
+      <div class="header"><h2>To Do</h2><span id="count" class="count"></span></div>
+      <form id="form">
+        <input id="newTodo" maxlength="180" autocomplete="off" placeholder="Add something to your list…" aria-label="New to-do item">
+        <button type="submit">Add</button>
+      </form>
+      <ul id="list"></ul>
+      <div class="footer">
+        <span>Saved only on this browser/device</span>
+        <button id="clearDone" type="button" class="ghost">Clear completed</button>
+      </div>
+    </section>
+  </div>
+</main>
+<script>
+const KEY='commandCenterTodos.v1';
+const $=s=>document.querySelector(s);
+let todos=[];
+try{todos=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(todos))todos=[]}catch{todos=[]}
+function save(){localStorage.setItem(KEY,JSON.stringify(todos))}
+function clock(){
+ const d=new Date();
+ $('#time').textContent=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+ $('#date').textContent=d.toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+function render(){
+ const list=$('#list');list.innerHTML='';
+ const open=todos.filter(t=>!t.done).length;
+ $('#count').textContent=`${open} open · ${todos.length} total`;
+ if(!todos.length){list.innerHTML='<li class="empty">Nothing on the list.</li>';return}
+ todos.forEach(t=>{
+   const li=document.createElement('li');li.className='todo'+(t.done?' done':'');
+   const cb=document.createElement('input');cb.type='checkbox';cb.checked=t.done;cb.setAttribute('aria-label','Mark complete');
+   cb.addEventListener('change',()=>{t.done=cb.checked;save();render()});
+   const label=document.createElement('span');label.className='label';label.textContent=t.text;
+   const rm=document.createElement('button');rm.type='button';rm.className='remove';rm.textContent='×';rm.setAttribute('aria-label','Delete item');
+   rm.addEventListener('click',()=>{todos=todos.filter(x=>x.id!==t.id);save();render()});
+   li.append(cb,label,rm);list.append(li);
+ });
+}
+$('#form').addEventListener('submit',e=>{
+ e.preventDefault();const input=$('#newTodo');const text=input.value.trim();if(!text)return;
+ todos.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),text,done:false});
+ input.value='';save();render();input.focus();
+});
+$('#clearDone').addEventListener('click',()=>{todos=todos.filter(t=>!t.done);save();render()});
+clock();setInterval(clock,1000);render();
+</script>
+</body>
+</html>
